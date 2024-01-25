@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <title>Adaugare Masina</title>
+</head>
+<body class="d-flex flex-column h-100">
+<main class="flex-shrink-0">
+
+    <!-- Page Content-->
+    <section layout:fragment="body" class="py-5">
+        <div class="container">
+            <form role="form" method="post" th:action="@{/autos/new}" th:object="${autoturisme}">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="marca">Marca</label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="marca"
+                                name="marca"
+                                th:field="*{marca}"
+                                placeholder="Marca">
+                        <p th:if="${#fields.hasErrors('marca')}" class="text-danger" th:errors="*{marca}"></p>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="photoUrl">Photourl</label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="photoUrl"
+                                name="photoUrl"
+                                th:field="*{photoUrl}"
+                                placeholder="Photo Url">
+                        <p th:if="${#fields.hasErrors('photoUrl')}" class="text-danger" th:errors="*{photoUrl}"></p>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="descriere">Descriere</label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="descriere"
+                            name="descriere"
+                            th:field="*{descriere}"
+                            placeholder="Descriere">
+                    <p th:if="${#fields.hasErrors('descriere')}" class="text-danger" th:errors="*{descriere}"></p>
+                </div>
+                <button type="submit" class="btn btn-primary">Create</button>
+            </form>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

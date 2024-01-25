@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/vfs_fonts.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        h2 {
+            color: cadetblue;
+        }
+
+        body {
+            text-align: center;
+        }
+
+        .dataTables_wrapper {
+            width: 80% !important;
+            margin: auto;
+        }
+
+        button {
+            padding: 0.25rem 1rem !important;
+            background: green !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            font-weight: 700 !important;
+            cursor: pointer;
+        }
+
+        .buttons-copy,
+        .buttons-csv,
+        .buttons-excel,
+        .buttons-pdf {
+            background: lightblue !important;
+            color: white;
+        }
+
+        .buttons-csv-import {
+            background: orange !important;
+            color: white;
+        }
+
+        .delete-button {
+            background: red !important;
+        }
+
+        thead {
+            background-color: cadetblue;
+            color: white;
+        }
+
+        #chart-container {
+            width: 80%;
+            margin: auto;
+            display: none;
+        }
+
+        #chart-page {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<h2>HTML TABLE EXPORT BUTTONS</h2>
+<div id="table-page">
+    <table id="table" class="display">
+        <thead>
+        <th>Name</th>
+        <th>Descriere</th>
+        <th>Marca</th>
+        <th>Link</th>
+        <th>Update On</th>
+        <th>Pret</th>
+        <th>Action</th>
+        </thead>
+        <tbody>
+        <!-- Table rows go here -->
+        <tr>
+            <td>Ford </td>
+            <td>Puma ST </td>
+            <td>Ford </td>
+            <td>https://www.ford-iasi.ro/uploads/img/modele/puma/puma1.jpg</td>
+            <td>2022-01-22</td>
+            <td>30000$ </td>
+            <td><button class="delete-button" onclick="deleteRow(this)">Delete</button></td>
+        </tr>
+        <tr>
+            <td>Audi </td>
+            <td>A4 </td>
+            <td> Audi </td>
+            <td>https://ireland.apollo.olxcdn.com/v1/files/eyJmbiI6InpvajRhq=70.jpg</td>
+            <td>2018-09-20</td>
+            <td>20000$ </td>
+            <td><button class="delete-button" onclick="deleteRow(this)">Delete</button></td>
+        </tr>
+        <tr>
+            <td>Ford </td>
+            <td>Focus </td>
+            <td>Ford </td>
+            <td>https://ford.focus.olxcdn.com/v1/files/eyJmbiI6InpvajRhq=70.jpg</td>
+            <td>2010-05-20</td>
+            <td>6000$ </td>
+            <td><button class="delete-button" onclick="deleteRow(this)">Delete</button></td>
+        </tr>
+        <tr>
+            <td>Ford </td>
+            <td>Fiesta </td>
+            <td>Ford </td>
+            <td>https://ford.fiesta.olxcdn.com/v1/files/eyJmbiI6InpvajRhq=70.jpg</td>
+            <td>2020-08-30</td>
+            <td>15000$ </td>
+            <td><button class="delete-button" onclick="deleteRow(this)">Delete</button></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Button to show the chart -->
+    <button onclick="showChartPage()">Grafic</button>
+</div>
+
+<!-- Chart Container -->
+<div id="chart-container">
+    <canvas id="priceChart"></canvas>
+
+    <!-- Button to go back to the table -->
+    <button onclick="showTablePage()">Back to Table</button>
+</div>
+
+<!-- Chart Page -->
+<div id="chart-page">
+    <h2>Chart for Pret</h2>
+    <canvas id="chart"></canvas>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var table = $('#table').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                'copyHtml5',
+                'csvHtml5',
+                'excelHtml5',
+                'pdfHtml5',
+                {
+                    extend: 'csv',
+                    className: 'buttons-csv-import',
+                    text: 'Import CSV',
+                    action: function (e, dt, button, config) {
+                        // Trigger a file input click event
+                        $('#csvFileInput').click();
+                    }
+                }
+            ]
+        });
+
+        // Add a hidden file input element for CSV file selection
+        $('body').append('<input type="file" id="csvFileInput" style="display:none">');
+
+        // Handle file input change event
+        $('#csvFileInput').on('change', function (e) {
+            var file = e.target.files[0];
+            if (file) {
+                // Read the contents of the selected CSV file
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    // Parse the CSV data
+                    var csvData = event.target.result;
+                    var rows = csvData.split('\n');
+
+                    // Remove the header row if present
+                    if (rows.length > 0) {
+                        rows.shift();
+                    }
+
+                    // Loop through the rows and add them to the DataTable
+                    rows.forEach(function (row) {
+                        var columns = row.split(',');
+                        table.row.add(columns).draw(false);
+                    });
+                };
+                reader.readAsText(file);
+            }
+        });
+    });
+
+    function deleteRow(button) {
+        var row = $(button).closest('tr');
+        var table = $('#table').DataTable();
+        table.row(row).remove().draw(false);
+    }
+
+    function showChartPage() {
+        $('#table-page').hide();
+        $('#chart-container').show();
+        $('#chart-page').show();
+
+        // Get data from the table for the chart
+        var labels = [];
+        var prices = [];
+
+        $('#table tbody tr').each(function () {
+            labels.push($(this).find('td:eq(2)').text()); // Marca
+            prices.push(parseFloat($(this).find('td:eq(5)').text().replace('$', '').replace(',', ''))); // Pret
+        });
+
+        // Create chart on the chart page
+        var ctx = document.getElementById('chart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Pret',
+                    data: prices,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    function showTablePage() {
+        $('#chart-container').hide();
+        $('#chart-page').hide();
+        $('#table-page').show();
+    }
+</script>
+</body>
+</html>
